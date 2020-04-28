@@ -1,3 +1,5 @@
+from copy import copy
+
 def radius_okay(polygons, x, y, RADIUS=11):
     okay = 1
 
@@ -49,6 +51,29 @@ def minkowski_sum(polygon1, polygon2, center):
 # Функция возвращает 1, если точка c находится справа от ab
 def right_rotate(a, b, c):
     return a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y) < 0
+
+
+# Функция возвращает все "впадины" невыпуклых полигонов
+def detect_nonconvex_points(poly):
+    polygon = copy(poly)
+    point_idx = 0
+    nonconvex_points = []
+    left_point = polygon[0]
+
+    # ищем самую левую нижнюю точку
+    for i in range(1, len(polygon)):
+        if polygon[i].x < left_point.x:
+            polygon[i], left_point = left_point, polygon[i]
+
+
+    while point_idx < len(polygon) - 1:
+        if right_rotate(polygon[point_idx-1], polygon[point_idx], polygon[point_idx+1]):
+            nonconvex_points.append(polygon[point_idx])
+
+        point_idx += 1
+
+
+    return nonconvex_points
 
 
 # Вычисление минимальной выпуклой оболочки (метод Грэхэма, O(nlogn))
