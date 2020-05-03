@@ -1,6 +1,7 @@
 from intersections import check_point_in_polygon
 from figures import Point
 
+# Добавляем 4 доп. вершины к каждой из вершин полигона
 def pseudo_minkowski_sum(polygon, radius):
     new_polygon = []
 
