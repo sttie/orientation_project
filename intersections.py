@@ -1,6 +1,5 @@
 from figures import *
 
-
 def area(p1, p2, p3):
     return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)
 
@@ -100,9 +99,25 @@ def check_segment_intersections(polygons, edge, count_intersections=False):
     return intersections_amount
 
 
+
+def in_area(edge, polygons, radius):
+    for polygon in polygons:
+        for vertex in polygon:
+            square_polygon = [Point(vertex.x - radius, vertex.y + radius), Point(vertex.x - radius, vertex.y - radius),
+                            Point(vertex.x + radius, vertex.y + radius), Point(vertex.x + radius, vertex.y - radius)]
+
+            if edge.start in square_polygon and edge.end in square_polygon:
+                return 0
+
+            if check_segment_intersections([square_polygon], edge):
+                return 1
+
+    return 0
+
 """
 Основная функция. Строит граф видимости
-polygons - список полигонов
+polygons - список "псевдо полигонов" (т.е. полигонов, к которым добавились точки, отстоящие от вершин на какую-то величину)
+polygons_to_not_intersect - исходные полигоны, которые были нарисованы пользователем
 start_point - стартовая точка
 end_point - конечная точка
 
@@ -111,7 +126,7 @@ end_point - конечная точка
 определенное число, начиная с 0. Таким образом, можно хранить граф просто в виде матрицы смежности
 и не тратить дополнительную память на хранение объектов типа Point в графе
 """
-def build_view_graph(polygons, start_point, end_point):
+def build_view_graph(polygons, polygons_to_not_intersect, start_point, end_point, radius):
     polygon_idx = 0
     polygons_amount = len(polygons)
 
@@ -155,11 +170,15 @@ def build_view_graph(polygons, start_point, end_point):
                 an_p_idx = 0
                 continue
 
+            # написать функцию которая НЕ строит ребро между точкой и точкой если она входит в отстоящие вон те точки
+
             # Cтроим ребро между текущей парой точек
             new_edge = Segment(polygons[cur_polygon][p_idx], polygons[sub_polygon][an_p_idx])
-            # (если ребро НЕ пересекается с другими) И (ребро является частью какого-либо полигона ИЛИ ребро НЕ находится в каком-либо полигоне целиком)
-            if not check_segment_intersections(polygons, new_edge) and (new_edge in get_segments(polygons[sub_polygon]) \
-                    or not check_if_segment_in_polygon(polygons, new_edge)):
+            # Куча различных проверок на пересечения, но все отчасти понятно из названий функций
+            if not in_area(new_edge, polygons_to_not_intersect, radius) and not check_if_segment_in_polygon(polygons, new_edge) \
+                        and not check_segment_intersections(polygons_to_not_intersect, new_edge) \
+                        and (new_edge in get_segments(polygons_to_not_intersect[sub_polygon]) \
+                             or not check_if_segment_in_polygon(polygons_to_not_intersect, new_edge)):
                 # вычисляем длину ребра
                 weight = weight_evaluate(new_edge)
                 # и добавляем его в граф видимости
@@ -186,12 +205,12 @@ def build_view_graph(polygons, start_point, end_point):
         edge_with_start = Segment(polygons[cur_polygon][p_idx], start_point)
         edge_with_end = Segment(polygons[cur_polygon][p_idx], end_point)
 
-        if not check_segment_intersections(polygons, edge_with_start):
+        if not in_area(edge_with_start, polygons_to_not_intersect, radius) and not check_segment_intersections(polygons_to_not_intersect, edge_with_start):
             weight = weight_evaluate(edge_with_start)
             second_point_index = all_points.index(edge_with_start.start)
             veiw_graph.add_edge((0, second_point_index), weight)
 
-        if not check_segment_intersections(polygons, edge_with_end):
+        if not in_area(edge_with_end, polygons_to_not_intersect, radius) and not check_segment_intersections(polygons_to_not_intersect, edge_with_end):
             weight = weight_evaluate(edge_with_end)
             second_point_index = all_points.index(edge_with_end.start)
             veiw_graph.add_edge((vertex_amount - 1, second_point_index), weight)
@@ -201,7 +220,7 @@ def build_view_graph(polygons, start_point, end_point):
 
     # Ребро между стартовой и конечной точками
     edge = Segment(start_point, end_point)
-    if not check_segment_intersections(polygons, edge):
+    if not in_area(edge, polygons_to_not_intersect, radius) and not check_segment_intersections(polygons_to_not_intersect, edge):
         weight = weight_evaluate(edge)
         veiw_graph.add_edge((0, vertex_amount - 1), weight)
 
