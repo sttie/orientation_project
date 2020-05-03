@@ -2,15 +2,15 @@ import pygame
 from figures import *
 from geometry import *
 from intersections import *
-from dijkstra import dijkstra_algo
 from astar import astar_algo
 
 
-FPS = 30
+# Разные константы для читаемости
+FPS = 24
 fpsClock = pygame.time.Clock()
-WIDTH = 1000
-HEIGHT = 700
-ROBOT_RADIUS = 12
+WIDTH = 1200
+HEIGHT = 900
+ROBOT_RADIUS = 10
 END_POINT_RADIUS = 4
 LEFT_BUTTON = 1
 RIGHT_BUTTON = 3
@@ -23,27 +23,14 @@ BLUE = (0, 0, 255)
 VIOLET = (139, 0, 255)
 
 
-# Удаляет повторяющиеся элементы
-def delete_repeats(array):
-    result = []
-
-    for i in array:
-        if not i in result:
-            result.append(i)
-
-    return result
-
-
-# Функция рисует полигон
+# Рисование полигона
 def draw_polygon(display, polygon, line_colour=BLACK, circle_colour=RED, enough=False):
     if enough:
-        polygon.add_point_p(polygon[0])
+        polygon.append(polygon[0])
 
 
     for i in range(len(polygon) - 1):
         pygame.draw.aaline(display, line_colour, (polygon[i].x, polygon[i].y), (polygon[i+1].x, polygon[i+1].y))
-        pygame.draw.circle(display, circle_colour, (polygon[i].x, polygon[i].y), 5)
-        pygame.draw.circle(display, circle_colour, (polygon[i+1].x, polygon[i+1].y), 5)
 
 
 
@@ -67,8 +54,10 @@ def draw_line_from_points(display, p1, p2, colour):
 
 
 def drawer_loop(display):
-    # Список полигонов
+    # Список полигонов ДЛЯ ОТРИСОВКИ
     polygons = []
+    # Список тех полигонов, относительно которых будет строится граф видимости
+    polygons_to_check = []
     
     # Флаг цикла отрисовки экрана
     running = 1
@@ -81,17 +70,8 @@ def drawer_loop(display):
     end_point = None
 
 
-    # Чтобы запретить ставить точку в окрестности полигонов, ПОКА ЧТО берем рандомный центр, здесь это не важно
-    center = Point(50, 50)
-    # Пока что (!!!!) аппроксимируем окружность квадратом, можно поменять
-    robot_polygon = [Point(center.x - ROBOT_RADIUS, center.y - ROBOT_RADIUS), Point(center.x + ROBOT_RADIUS, center.y - ROBOT_RADIUS), 
-                     Point(center.x + ROBOT_RADIUS, center.y + ROBOT_RADIUS), Point(center.x - ROBOT_RADIUS, center.y + ROBOT_RADIUS),
-                     Point(center.x - ROBOT_RADIUS, center.y - ROBOT_RADIUS)]
-    minkowski_polygons = []
-
-
     current_polygon = 0
-    polygons.append(Polygon([]))
+    polygons.append([])
 
     while running:
         # Ограничиваем частоту кадров
@@ -107,31 +87,27 @@ def drawer_loop(display):
                     # Если все еще рисуем полигоны
                     if polygons_draw and radius_okay(polygons, *mouse_position):
                         new_point = Point(*mouse_position)
-                        polygons[current_polygon].add_point_p(new_point)
+                        polygons[current_polygon].append(new_point)
 
                     # Если рисуем стартовую точку
-                    elif vertex_from and radius_okay(polygons, *mouse_position) and not check_point_in_polygon(minkowski_polygons, Point(*mouse_position)):
+                    elif vertex_from and radius_okay(polygons, *mouse_position) and not check_point_in_polygon(polygons, Point(*mouse_position)):
                         start_point = Point(*mouse_position)
 
                     # Если рисуем конечную точку
-                    elif vertex_to and radius_okay(polygons, *mouse_position) and not check_point_in_polygon(minkowski_polygons, Point(*mouse_position)):
+                    elif vertex_to and radius_okay(polygons, *mouse_position) and not check_point_in_polygon(polygons, Point(*mouse_position)):
                         end_point = Point(*mouse_position)
 
 
             elif event.type == pygame.KEYDOWN:
                 # Если нажата клавиша Q и мы все еще рисуем полигоны
                 if event.key == pygame.K_q and polygons_draw:
-                    # Получаем результат суммы Минковского
-                    result_of_mink_sum = minkowski_sum(robot_polygon, polygons[current_polygon], center)
-                    # В сумме Минковского остается куча одинаковых точек - необходимо сделать все элементы уникальными
-                    result_of_mink_sum = delete_repeats(result_of_mink_sum)
-                    # А теперь получаем минимальную выпуклую оболочку
-                    convex_hull = Polygon(make_convex_hull(result_of_mink_sum))
-                    # И сохраняем как новое препятствие
-                    minkowski_polygons.append(convex_hull)
-
                     draw_polygon(display, polygons[current_polygon], enough=True)
-                    polygons.append(Polygon([]))
+
+                    # Теперь добавим модифицированный полигон
+                    pseudo_obstacle = pseudo_minkowski_sum(polygons[current_polygon], ROBOT_RADIUS + 4)
+                    polygons_to_check.append(pseudo_obstacle)
+
+                    polygons.append([])
                     current_polygon += 1
 
                 # Если нажата клавиша Е
@@ -159,20 +135,12 @@ def drawer_loop(display):
         window_update(display, polygons, start_point, end_point)
 
 
-    # А сейчас центр уже важен, так что обновляем и его, и полигон робота
-    center = start_point
-    # Пока что (!!!!) аппроксимируем окружность квадратом, можно поменять
-    robot_polygon = [Point(center.x - ROBOT_RADIUS, center.y - ROBOT_RADIUS), Point(center.x + ROBOT_RADIUS, center.y - ROBOT_RADIUS), 
-                     Point(center.x + ROBOT_RADIUS, center.y + ROBOT_RADIUS), Point(center.x - ROBOT_RADIUS, center.y + ROBOT_RADIUS),
-                     Point(center.x - ROBOT_RADIUS, center.y - ROBOT_RADIUS)]
-
-
-    view_graph, all_points = build_view_graph(minkowski_polygons, start_point, end_point)
+    view_graph, all_points = build_view_graph(polygons_to_check, polygons, start_point, end_point, ROBOT_RADIUS + 4)
     path_astar = astar_algo(view_graph, 0, view_graph.vertex_amount - 1, all_points)
 
     # Флаг. Если -1, то отрисовывается граф видимости, если 1, то кратчайший путь
     # Флаг меняется по нажатию клавиши Z
-    view_flag = -1
+    view_flag = 1
     # Флаг цикла отрисовки экрана
     running = 1
 
@@ -185,7 +153,7 @@ def drawer_loop(display):
                 if event.key == pygame.K_q:
                     running = 0
                 elif event.key == pygame.K_z:
-                    view_flag = view_flag + 1 if view_flag < 1 else -1
+                    view_flag = -view_flag
 
 
         display.fill(WHITE)
@@ -198,11 +166,6 @@ def drawer_loop(display):
                     if view_graph.get_weight(point, point_to_connect):
                         p1, p2 = all_points[point], all_points[point_to_connect]
                         draw_line_from_points(display, p1, p2, YELLOW)
-        
-        # Рисуем выпуклые оболочки
-        elif view_flag == 0:
-            for polygon in minkowski_polygons:
-                draw_polygon(display, polygon, line_colour=GREEN)
 
         # Отрисовка кратчайшего пути
         else:
@@ -214,8 +177,6 @@ def drawer_loop(display):
         for polygon in polygons:
             draw_polygon(display, polygon)
 
-        # Рисуем форму робота (???)
-        draw_polygon(display, robot_polygon)
 
         # Рисуем стартовую и конечную точки
         pygame.draw.circle(display, GREEN, (start_point.x, start_point.y), ROBOT_RADIUS)
@@ -230,7 +191,7 @@ def drawer_init():
     pygame.init()
     display = pygame.display.set_mode((WIDTH, HEIGHT))
     display.fill(WHITE)
-    pygame.display.set_caption("Рисование карты")
+    pygame.display.set_caption("Редактор карты")
 
     return display
 
