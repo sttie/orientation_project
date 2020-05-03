@@ -1,7 +1,7 @@
 import pygame
 from figures import *
-from geometry import *
-from intersections import *
+from geometry import pseudo_minkowski_sum, radius_okay
+from intersections import check_point_in_polygon, build_view_graph
 from astar import astar_algo
 
 
