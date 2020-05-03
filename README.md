@@ -1,6 +1,6 @@
 # figures.py
 
-Содержит классы Graph, Polygon, Point, Segment
+Содержит классы Graph, Point, Segment
 
 # draw_map.py
 
