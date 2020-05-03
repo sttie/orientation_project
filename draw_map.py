@@ -136,6 +136,10 @@ def drawer_loop(display):
 
     view_graph, all_points = build_view_graph(polygons_to_check, polygons, start_point, end_point, ROBOT_RADIUS + 4)
     path_astar = astar_algo(view_graph, 0, view_graph.vertex_amount - 1, all_points)
+    
+    # Если пути между точками нет, путь просто не будет отображаться
+    if len(path_astar) == 2 and not view_graph.get_weight(0, view_graph.vertex_amount - 1):
+        path_astar = []
 
     # Флаг. Если -1, то отрисовывается граф видимости, если 1, то кратчайший путь
     # Флаг меняется по нажатию клавиши Z
