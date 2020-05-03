@@ -1,4 +1,4 @@
-# figures.py
+## figures.py
 
 Содержит классы Graph, Point, Segment
 
