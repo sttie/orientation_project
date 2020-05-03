@@ -54,30 +54,3 @@ class Segment:
 
     def __str__(self):
         return "[{}, {}]".format(self.start, self.end)
-
-
-class Polygon:
-    def __init__(self, points=[]):
-        self.points = points
-
-    def add_point_xy(self, x, y):
-        self.points.append(Point(x, y))
-
-    def add_point_p(self, point):
-        self.points.append(point)
-
-    def index(self, obj):
-        return self.points.index(obj)
-
-    def inp(self, point):
-        return point in self.points
-
-    def __getitem__(self, key):
-        return self.points[key]
-
-    def __len__(self):
-        return len(self.points)
-    
-    def __iter__(self):
-        for point in self.points:
-            yield point
