@@ -28,7 +28,6 @@ def draw_polygon(display, polygon, line_colour=BLACK, circle_colour=RED, enough=
     if enough:
         polygon.append(polygon[0])
 
-
     for i in range(len(polygon) - 1):
         pygame.draw.aaline(display, line_colour, (polygon[i].x, polygon[i].y), (polygon[i+1].x, polygon[i+1].y))
 
