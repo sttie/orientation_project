@@ -135,7 +135,6 @@ def drawer_loop(display):
 
     view_graph, all_points = build_view_graph(polygons_to_check, polygons, start_point, end_point, ROBOT_RADIUS)
     path_astar = astar_algo(view_graph, 0, view_graph.vertex_amount - 1, all_points)
-    print("FAJKFHSKJAHFKJSHDAJKFHSAFJKDSHLDJKSFHSLKJFDHGKJADSGHDSKJLGHJDFSLAFJKDFJS;LFDK;F\nJHFDSKJFHSDKJFDSHFJKD")
     # Если пути между точками нет, путь просто не будет отображаться
     if len(path_astar) == 2 and not view_graph.get_weight(0, view_graph.vertex_amount - 1):
         path_astar = []
