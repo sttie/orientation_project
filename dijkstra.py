@@ -1,20 +1,8 @@
-# Ширина окна - 1000, высота - 700 => максимальная (округленная) длина ребра - 1221
-MAXLEN = 1221
-
-def find_path(start, end, ancestors, all_points):
-    path = []
-    vert = end
-    while vert != start:
-        path.append(all_points[vert])
-        vert = ancestors[vert]
-
-    path.append(all_points[start])
-
-    return path[::-1]
-
+# Ширина окна - 1200, высота - 900 => максимальная (округленная) длина ребра - 1500
+MAXLEN = 1500
 
 def dijkstra_algo(graph, start, end, all_points):
-    # setdefault 0, setdefault MAXLEN
+    dijkstra_visited = []
     lengths = [MAXLEN] * graph.vertex_amount
     visited = [0] * graph.vertex_amount
     ancestors = [0] * graph.vertex_amount
@@ -26,15 +14,28 @@ def dijkstra_algo(graph, start, end, all_points):
             if not visited[j] and (vert == None or lengths[j] < lengths[vert]):
                 vert = j
 
-        if lengths[vert] == MAXLEN:
+        if vert == end:
             break
 
         visited[vert] = 1
+        dijkstra_visited.append(vert)
+
         for e in range(graph.vertex_amount):
-            # если ребро между vert и e существует
-            if graph.get_weight(vert, e) != 0:
+            if graph.get_weight(vert, e):
                 if lengths[vert] + graph.get_weight(vert, e) < lengths[e]:
                     lengths[e] = lengths[vert] + graph.get_weight(vert, e)
                     ancestors[e] = vert
 
-    return find_path(start, end, ancestors, all_points)
+    return find_path(start, end, ancestors, all_points), dijkstra_visited
+
+
+def find_path(start, end, ancestors, all_points):
+    path = []
+    vert = end
+    while vert != start:
+        path.append(all_points[vert])
+        vert = ancestors[vert]
+
+    path.append(all_points[start])
+
+    return path[::-1]
