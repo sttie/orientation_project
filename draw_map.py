@@ -1,8 +1,9 @@
 import pygame
 from figures import *
-from geometry import pseudo_minkowski_sum, radius_okay
 from intersections import check_point_in_polygon, build_view_graph
+from geometry import pseudo_minkowski_sum, radius_okay
 from astar import astar_algo
+from dijkstra import dijkstra_algo
 
 
 # Разные константы для читаемости
@@ -45,10 +46,6 @@ def window_update(display, polygons, start_point, end_point):
         pygame.draw.circle(display, BLUE, (end_point.x, end_point.y), END_POINT_RADIUS)
 
     pygame.display.update()
-
-
-def draw_line_from_points(display, p1, p2, colour):
-    pygame.draw.line(display, colour, [p1.x, p1.y], [p2.x, p2.y], 2)
 
 
 def drawer_loop(display):
@@ -133,15 +130,26 @@ def drawer_loop(display):
         window_update(display, polygons, start_point, end_point)
 
 
+
+    font = pygame.font.Font(None, 36)
+    texts = [font.render("Visibility graph", 1, (0, 0, 0)), font.render("Dijkstra path", 1, (0, 0, 0)), font.render("A* path", 1, (0, 0, 0))]
+    current_text = texts[1]
+
     view_graph, all_points = build_view_graph(polygons_to_check, polygons, start_point, end_point, ROBOT_RADIUS)
-    path_astar = astar_algo(view_graph, 0, view_graph.vertex_amount - 1, all_points)
+    path_astar, astar_visited = astar_algo(view_graph, 0, view_graph.vertex_amount - 1, all_points)
+    path_dijkstra, dijkstra_visited = dijkstra_algo(view_graph, 0, view_graph.vertex_amount - 1, all_points)
+
+
     # Если пути между точками нет, путь просто не будет отображаться
     if len(path_astar) == 2 and not view_graph.get_weight(0, view_graph.vertex_amount - 1):
         path_astar = []
+    if len(path_dijkstra) == 2 and not view_graph.get_weight(0, view_graph.vertex_amount - 1):
+        path_dijkstra = []
 
-    # Флаг. Если -1, то отрисовывается граф видимости, если 1, то кратчайший путь
+
+    # Флаг. Если -1, то отрисовывается граф видимости, если 0, то путь по алгоритму Дейкстры, если 1, то путь по алгоритму А*
     # Флаг меняется по нажатию клавиши Z
-    view_flag = 1
+    view_flag = 0
     # Флаг цикла отрисовки экрана
     running = 1
 
@@ -154,7 +162,8 @@ def drawer_loop(display):
                 if event.key == pygame.K_q:
                     running = 0
                 elif event.key == pygame.K_z:
-                    view_flag = -view_flag
+                    view_flag = view_flag + 1 if view_flag < 1 else -1
+                    current_text = texts[view_flag + 1]
 
 
         display.fill(WHITE)
@@ -166,18 +175,34 @@ def drawer_loop(display):
                     # Если ребро между point и point_to_connect существует
                     if view_graph.get_weight(point, point_to_connect):
                         p1, p2 = all_points[point], all_points[point_to_connect]
-                        draw_line_from_points(display, p1, p2, YELLOW)
+                        pygame.draw.line(display, YELLOW, (p1.x, p1.y), (p2.x, p2.y), 2)
 
-        # Отрисовка кратчайшего пути
-        else:
+        # Отрисовка пути по Дейкстре
+        elif view_flag == 0:
+            for point_idx in range(len(path_dijkstra) - 1):
+                p1, p2 = path_dijkstra[point_idx], path_dijkstra[point_idx + 1]
+                pygame.draw.line(display, VIOLET, (p1.x, p1.y), (p2.x, p2.y), 2)
+
+            for v in dijkstra_visited:
+                point = all_points[v]
+                pygame.draw.circle(display, RED, (point.x, point.y), 3)
+
+        # Отрисовка пути по А*
+        elif view_flag == 1:
             for point_idx in range(len(path_astar) - 1):
                 p1, p2 = path_astar[point_idx], path_astar[point_idx + 1]
-                draw_line_from_points(display, p1, p2, VIOLET)
+                pygame.draw.line(display, VIOLET, (p1.x, p1.y), (p2.x, p2.y), 2)
+
+            for v in astar_visited:
+                point = all_points[v]
+                pygame.draw.circle(display, RED, (point.x, point.y), 3)
+
+        # Отрисовываем текст
+        display.blit(current_text, (20, 20))
 
         # Рисуем исходные препятствия
         for polygon in polygons:
             draw_polygon(display, polygon)
-
 
         # Рисуем стартовую и конечную точки
         pygame.draw.circle(display, GREEN, (start_point.x, start_point.y), ROBOT_RADIUS)
