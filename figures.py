@@ -3,17 +3,22 @@ class Graph:
         self.vertex_amount = vertex_amount
         self.matrix = []
         for i in range(vertex_amount):
-            self.matrix.append([0] * vertex_amount)
+            self.matrix.append([])
 
     # Добавление ребра edge = (vertex1, vertex2) с весом weight
     def add_edge(self, edge, weight):
         vertex1, vertex2 = edge
 
-        self.matrix[vertex1][vertex2] = weight
-        self.matrix[vertex2][vertex1] = weight
+        self.matrix[vertex1].append((vertex2, weight))
+        self.matrix[vertex2].append((vertex1, weight))
 
+    # Ищем нужное ребро, не нашли => возвращаем 0
     def get_weight(self, vertex1, vertex2):
-        return self.matrix[vertex1][vertex2]
+        for vert in self.matrix[vertex1]:
+            if vert[0] == vertex2:
+                return vert[1]
+
+        return 0
 
 
 class Point:
