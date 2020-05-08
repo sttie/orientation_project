@@ -14,29 +14,34 @@ h(v) - эвристическое приближение стоимости пу
 def astar_algo(graph, start, end, all_points):
     astar_visited = []
     to_visit = []
-    push(to_visit, (0, start))
     ancestors = [0] * graph.vertex_amount
     lengths = [0] * graph.vertex_amount
+    visited = [0] * graph.vertex_amount
+
+    push(to_visit, (0, start))
     lengths[start] = 0
 
     while len(to_visit) > 0:
         current_vert = pop(to_visit)[1]
+
+        if visited[current_vert]:
+            continue
 
         if current_vert == end:
             break
 
         astar_visited.append(current_vert)
 
-        for v in range(graph.vertex_amount):
-            if not graph.get_weight(current_vert, v):
-                continue
+        for neighbor in graph.matrix[current_vert]:
+            neighbor_num, weight = neighbor[0], neighbor[1]
+            cost = lengths[current_vert] + weight
+            if not lengths[neighbor_num] or cost < lengths[neighbor_num]:
+                lengths[neighbor_num] = cost
+                prior = cost + heuristics(all_points[neighbor_num], all_points[end])
+                push(to_visit, (prior, neighbor_num))
+                ancestors[neighbor_num] = current_vert
 
-            cost = lengths[current_vert] + graph.get_weight(current_vert, v)
-            if not lengths[v] or cost < lengths[v]:
-                lengths[v] = cost
-                prior = cost + heuristics(all_points[v], all_points[end])
-                push(to_visit, (prior, v))
-                ancestors[v] = current_vert
+        visited[current_vert] = 1
 
     return find_path(start, end, ancestors, all_points), astar_visited
 
