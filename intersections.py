@@ -101,16 +101,17 @@ def check_segment_intersections(polygons, edge, count_intersections=False):
     return intersections_amount
 
 
-def check_strip(polygons, edge, radius):    
+def check_strip(polygons, edge, radius):
     x1, x2, y1, y2, x3, x4, y3, y4 = geometry.get_rectangle(edge.start, edge.end, radius)
-    segs = [Segment(Point(x2, y2), Point(x1, y1)), Segment(Point(x1, y1), Point(x3, y3)), 
-                Segment(Point(x3, y3), Point(x4, y4)), Segment(Point(x4, y4), Point(x2, y2))]
+    segs = [Segment(Point(x4, y4), Point(x3, y3)), Segment(Point(x3, y3), Point(x1, y1)), 
+                Segment(Point(x1, y1), Point(x2, y2)), Segment(Point(x2, y2), Point(x4, y4))]
 
     for segment in segs:
         if check_segment_intersections(polygons, segment):
             return 1
 
     return 0
+
 
 """
 Основная функция. Строит граф видимости
