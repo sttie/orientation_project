@@ -99,7 +99,7 @@ def drawer_loop(display):
                     draw_polygon(display, polygons[current_polygon], enough=True)
 
                     # Теперь добавим модифицированный полигон
-                    pseudo_obstacle = pseudo_minkowski_sum(polygons[current_polygon], ROBOT_RADIUS + 4)
+                    pseudo_obstacle = pseudo_minkowski_sum(polygons[current_polygon], ROBOT_RADIUS + 6)
                     polygons_to_check.append(pseudo_obstacle)
 
                     polygons.append([])
