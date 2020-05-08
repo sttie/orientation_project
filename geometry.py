@@ -6,8 +6,9 @@ import intersections
 # с этими точками по центру двух противоположных сторон
 def get_rectangle(point, point2, radius):
     x1, x2, y1, y2 = point.x, point2.x, point.y, point2.y
-    
-    # Если координаты по иксу равны, то с точностью можно сказать об игриках
+
+    seg_len = ((x2 - x1)**2 + (y2 - y1)**2) ** (1/2)
+
     if x1 == x2:
         x3_1 = radius + x2
         x3_2 = -radius + x2
@@ -18,8 +19,6 @@ def get_rectangle(point, point2, radius):
         y3_1 = y3_2 = y2
     
     else:
-        seg_len = ((x2 - x1)**2 + (y2 - y1)**2) ** (1/2)
-
         # Считаем для x4, y4
         suby1 = (radius * (x2 - x1)) / seg_len
         k1 = (suby1 * (y2 - y1)) / (x2 - x1)
@@ -40,7 +39,61 @@ def get_rectangle(point, point2, radius):
         x3_2 = -k2 + x2
 
 
-    return x4_1, x4_2, y4_1, y4_2, x3_1, x3_2, y3_1, y3_2
+    # теперь нужно немного "удлинить" прямоугольник
+    # Point(x4_1, y4_1) и Point(x4_2, y4_2) находятся с одной стороны
+    x1, x2, y1, y2 = x4_1, x4_2, y4_1, y4_2
+    seg_len = ((x2 - x1)**2 + (y2 - y1)**2) ** (1/2)
+
+    if x1 == x2:
+        if point.x < point2.x:
+            x4 = x1 - radius
+            x3 = x2 - radius
+        else:
+            x4 = x1 + radius
+            x3 = x2 + radius
+        y4 = y1
+        y3 = y2
+    
+    else:
+        sub = (radius * (x2 - x1)) / seg_len
+        k = (-sub * (y2 - y1)) / (x2 - x1)
+
+        y3 = sub + y2
+        x3 = k + x2
+        y4 = sub + y1
+        x4 = k + x1
+    
+    
+    x1, x2, y1, y2 = x3_1, x3_2, y3_1, y3_2
+    seg_len = ((x2 - x1)**2 + (y2 - y1)**2) ** (1/2)
+
+    if x1 == x2:
+        if point.x < point2.x:
+            x6 = x2 + radius
+            x5 = x1 + radius
+        else:
+            x6 = x2 - radius
+            x5 = x1 - radius
+
+        y5 = y2
+        y6 = y1
+
+    else:
+        sub = -(radius * (x2 - x1)) / seg_len
+        k = (-sub * (y2 - y1)) / (x2 - x1)
+
+        y5 = sub + y2
+        x5 = k + x2
+        y6 = sub + y1
+        x6 = k + x1
+
+    if x3 == x5:
+        x3 -= radius
+        x4 += radius
+        x5 -= radius
+        x6 += radius
+
+    return x3, x4, y3, y4, x5, x6, y5, y6
 
 
 # Эти формулы тоже сложжно просто так объяснить, выводил в тетради
