@@ -78,7 +78,7 @@ edge - очередное ребро между двумя вершинами п
 count_intersections - если True, то нужно посчитать количество пересечений
 intersections_amount - количество пересечений
 """
-def check_segment_intersections(polygons, edge, count_intersections=False):
+def check_segment_intersections(polygons, edge, count_intersections=False, sub_polygon=None):
     intersections_amount = 0
     
     # проверяем все отрезки всех полигонов
@@ -101,14 +101,29 @@ def check_segment_intersections(polygons, edge, count_intersections=False):
     return intersections_amount
 
 
+def check_if_polygon_in_polygons(polygons, outer_polygon):
+    for polygon in polygons:
+        for segment in get_segments(polygon):
+            if check_if_segment_in_polygon([outer_polygon], segment):
+                return 1
+
+    return 0
+
 def check_strip(polygons, edge, radius):
     x1, x2, y1, y2, x3, x4, y3, y4 = geometry.get_rectangle(edge.start, edge.end, radius)
+    # Эквивалентные представления одного полигона
     segs = [Segment(Point(x4, y4), Point(x3, y3)), Segment(Point(x3, y3), Point(x1, y1)), 
                 Segment(Point(x1, y1), Point(x2, y2)), Segment(Point(x2, y2), Point(x4, y4))]
+    strip_polygon = [Point(x4, y4), Point(x3, y3), Point(x1, y1), Point(x2, y2), Point(x4, y4)]
+
 
     for segment in segs:
         if check_segment_intersections(polygons, segment):
             return 1
+    
+    # Для исключения полигонов, которые меньше полосы робота
+    if check_if_polygon_in_polygons(polygons, strip_polygon):
+        return 1
 
     return 0
 
