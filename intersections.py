@@ -101,7 +101,7 @@ def check_segment_intersections(polygons, edge, count_intersections=False, sub_p
     return intersections_amount
 
 
-def check_if_polygon_in_polygons(polygons, outer_polygon):
+def check_if_polygons_in_polygon(polygons, outer_polygon):
     for polygon in polygons:
         for segment in get_segments(polygon):
             if check_if_segment_in_polygon([outer_polygon], segment):
@@ -122,7 +122,7 @@ def check_strip(polygons, edge, radius):
             return 1
     
     # Для исключения полигонов, которые меньше полосы робота
-    if check_if_polygon_in_polygons(polygons, strip_polygon):
+    if check_if_polygons_in_polygon(polygons, strip_polygon):
         return 1
 
     return 0
