@@ -4,14 +4,6 @@ from astar import astar_algo
 from intersections import *
 
 
-#! ====================
-#! У тебя очень много функций в intersections, по сути, дублируют друг друга
-#! Сделай нормальный интерфейс работы всех функций
-#! ====================
-
-# TODO: узкие места
-# TODO: проверять точки на непересечение прямо в создании псевдополигонов
-
 def draw_seg(display, seg, color, width=4):
     pygame.draw.line(display, color, (seg.start.x, seg.start.y), (seg.end.x, seg.end.y), width)
     pygame.display.update()
@@ -71,8 +63,6 @@ def move_on_path(path, display, fpsClock):
         point_index += 1
 
 
-# TODO: 0 1 0 1 случай
-#! НУЖНО БУДЕТ ДОБАВИТЬ БОЛЬШЕ СЛУЧАЕВ!
 def eval_condition(robot, polygon, radius):
     p0 = Point(robot.x - radius, robot.y + radius)
     p1 = Point(robot.x - radius, robot.y - radius)
@@ -163,7 +153,7 @@ def cover_new_cell(cells, current_cell, robot, radius, view_graph, all_points, p
         if not check_point_in_polygon([polygon], end, get_segs=False):
             continue
 
-        view_graph, all_points = add_points(view_graph, all_points, pseudo_polygons, polygons, radius + 1, robot, end, display)                    
+        view_graph, all_points = add_points(view_graph, all_points, pseudo_polygons, polygons, radius + 1, robot, end)                    
         path = astar_algo(view_graph, view_graph.vertex_amount - 2, view_graph.vertex_amount - 1, all_points)
 
         if path is None or len(path) == 2 and not view_graph.get_weight(view_graph.vertex_amount - 2, view_graph.vertex_amount - 1):
