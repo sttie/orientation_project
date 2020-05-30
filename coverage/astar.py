@@ -47,12 +47,9 @@ def find_path(start, end, ancestors, all_points):
     path = []
     vert = end
     while vert != start:
-        print("dsads")
         path.append(all_points[vert])
         vert = ancestors[vert]
 
     path.append(all_points[start])
 
     return path[::-1]
-
-
