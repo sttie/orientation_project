@@ -24,13 +24,9 @@ IN = 0
 FLOOR = 1
 CEILING = 2
 OUT = 3
-
-
-def sort_by_x(event):
-    return event.location.x
         
 
-def sort_polygons(polygons, display):
+def sort_polygons(polygons):
     new_polygons = []
     for polygon in polygons:
         polygon.pop(-1)
@@ -82,7 +78,7 @@ def sort_polygons(polygons, display):
     return new_polygons
 
 
-def is_polygon(polygon, display):
+def is_polygon(polygon):
     flag = 1
 
     for i in range(len(polygon) - 1):
@@ -113,7 +109,6 @@ def get_current_cell(cells, event_pos, carriage, polygons, display):
     # начнем обход клеток справа (так быстрее дойдем до нужной)
     sorted_cells.sort(key=lambda e: e.left_border.start.x, reverse=True)
 
-    #! В IN ОТКРЫВАЕТСЯ КЛЕТКА НЕ ДО C А ДО ВЕРХА
     for cell in sorted_cells:
         polygon = [cell.left_border]
 
@@ -122,7 +117,6 @@ def get_current_cell(cells, event_pos, carriage, polygons, display):
 
         last_ceiling = Segment(cell.ceiling_edges[-1].start, carriage.start)
 
-        #! Возможно, нужно будет добавить check_if_...
         if intersect(polygons, last_ceiling.round())[0]:
             continue
         
@@ -134,7 +128,6 @@ def get_current_cell(cells, event_pos, carriage, polygons, display):
         first_floor = Segment(carriage.end, cell.floor_edges[-1].start)
         polygon.append(first_floor)
 
-        #! Округление??? Костыль?
         if intersect(polygons, first_floor.round())[0]:
             continue
 
@@ -143,14 +136,14 @@ def get_current_cell(cells, event_pos, carriage, polygons, display):
             polygon.append(seg.reverse())
     
         # проверяем, является ли это полигоном
-        if is_polygon(polygon, display) or check_if_polygons_in_polygon(polygons, polygon, get_segs=False):
+        if is_polygon(polygon) or check_if_polygons_in_polygon(polygons, polygon, get_segs=False):
             return cell
 
 
 def map_segmentation(polygons_old, map_width, map_height, display):
     events = []
     polygons = polygons_old.copy()
-    polygons = sort_polygons(polygons, display)
+    polygons = sort_polygons(polygons)
 
 
     for polygon in polygons:
@@ -161,8 +154,6 @@ def map_segmentation(polygons_old, map_width, map_height, display):
                 rightmost = polygon[i]
             if leftmost.x > polygon[i].x:
                 leftmost = polygon[i]
-
-        #! leftmost всегда первая в списке
 
         # Создаем новое событие IN
         ceiling_pointer = Segment(leftmost, polygon[1])
@@ -198,9 +189,7 @@ def map_segmentation(polygons_old, map_width, map_height, display):
     # Сортируем события по координате по иксу и событию
     events.sort(key=attrgetter("location.x", "event_type"))
     
-    
 
-    #! Левые границы идут снизу вверх, а правые - сверху вниз
     cells = []
     current_cells = []
 
