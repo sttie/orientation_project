@@ -156,13 +156,14 @@ def cover_new_cell(cells, current_cell, robot, radius, view_graph, all_points, p
         view_graph, all_points = add_points(view_graph, all_points, pseudo_polygons, polygons, radius + 1, robot, end)                    
         path = astar_algo(view_graph, view_graph.vertex_amount - 2, view_graph.vertex_amount - 1, all_points)
 
-        if path is None or len(path) == 2 and not view_graph.get_weight(view_graph.vertex_amount - 2, view_graph.vertex_amount - 1):
-            print("Нет ни одной доступной клетки")
-        else:                    
+        if path is not None and (len(path) != 2 or view_graph.get_weight(view_graph.vertex_amount - 2, view_graph.vertex_amount - 1)):                    
             move_on_path(path, display, fpsClock)
 
             while circle_intersection(robot, radius, polygon, display):
                 robot.y += radius // 2
+
+    if path is None or len(path) == 2 and not view_graph.get_weight(view_graph.vertex_amount - 2, view_graph.vertex_amount - 1):
+        print("Нет ни одной доступной клетки")
 
     return current_cell
 
@@ -184,9 +185,9 @@ def start_coverage(cells, view_graph, all_points, polygons, pseudo_polygons, rad
                 break
 
             robot.y += direction * (radius // 2 - 1)       
-            pygame.draw.circle(display, (0, 255, 0), (int(robot.x), int(robot.y)), radius)
+            pygame.draw.circle(display, (0, 255, 0), (int(robot.x), int(robot.y - 2*direction)), radius)
             pygame.display.update()
-            pygame.draw.circle(display, (0, 0, 255), (int(robot.x), int(robot.y)), radius)
+            pygame.draw.circle(display, (0, 0, 255), (int(robot.x), int(robot.y - 2*direction)), radius)
 
             condition, inters = eval_condition(robot, polygon, radius)  
             prev_inters = []       
@@ -216,9 +217,9 @@ def start_coverage(cells, view_graph, all_points, polygons, pseudo_polygons, rad
                 if condition == 13:
                     pass
 
-                pygame.draw.circle(display, (0, 255, 0), (int(robot.x), int(robot.y)), radius)
+                pygame.draw.circle(display, (0, 255, 0), (int(robot.x), int(robot.y - 2*direction)), radius)
                 pygame.display.update()
-                pygame.draw.circle(display, (0, 0, 255), (int(robot.x), int(robot.y)), radius)
+                pygame.draw.circle(display, (0, 0, 255), (int(robot.x), int(robot.y - 2*direction)), radius)
                 condition, inters = eval_condition(robot, polygon, radius)
                 if inters != [0, 0, 0, 0]:
                     prev_inters.append(inters)
