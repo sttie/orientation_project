@@ -46,16 +46,13 @@ def sort_polygons(polygons):
         else:
             p1, p2 = polygon[index-1], polygon[index+1]
 
-        if p1.y > p2.y:
-            if p1.x < p2.x:
-                next_idx = 0 if index == len(polygon) - 1 else index + 1
-                direction = 1
-            else:
-                next_idx = index - 1
-                direction = -1
-        else:
+        # Если p1 выше p2, меняем их (1-4 случаи)
+        if p1.y < p2.y:
             next_idx = 0 if index == len(polygon) - 1 else index + 1
             direction = 1
+        else:
+            next_idx = index - 1
+            direction = -1
 
         next_point = polygon[next_idx]
         new.append(next_point)
