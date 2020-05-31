@@ -24,14 +24,14 @@ def get_intersection(seg1, seg2):
     b2 = dir2.x
     d2 = -(a2*start2.x + b2*start2.y)
 
-    # подставляем концы отрезков для выяснения в каких полуплоскоcтях они
+    # подставляем концы отрезков для выяснения, в каких полуплоскоcтях они находятся
     seg1_line2_start = a2*start1.x + b2*start1.y + d2
     seg1_line2_end = a2*end1.x + b2*end1.y + d2
 
     seg2_line1_start = a1*start2.x + b1*start2.y + d1
     seg2_line1_end = a1*end2.x + b1*end2.y + d1
 
-    # если концы одного отрезка имеют один знак, значит он в одной полуплоскости и пересечения нет.
+    # если концы одного отрезка имеют один знак, значит он в одной полуплоскости и пересечения нет
     if seg1_line2_start * seg1_line2_end >= 0 or seg2_line1_start * seg2_line1_end >= 0:
         return 0
 
@@ -175,13 +175,14 @@ def check_strip(polygons, edge, radius):
     # Эквивалентные представления одного полигона
     segs = [Segment(Point(x4, y4), Point(x3, y3)), Segment(Point(x3, y3), Point(x1, y1)), 
                 Segment(Point(x1, y1), Point(x2, y2)), Segment(Point(x2, y2), Point(x4, y4))]
+    strip_polygon = [Point(x4, y4), Point(x3, y3), Point(x1, y1), Point(x2, y2), Point(x4, y4)]
 
     for segment in segs:
         if intersect(polygons, segment)[0]:
             return 1
     
     # Для исключения полигонов, которые меньше полосы робота
-    if check_if_polygons_in_polygon(polygons, segs, get_segs=False):
+    if check_if_polygons_in_polygon(polygons, strip_polygon):
         return 1
 
     return 0
