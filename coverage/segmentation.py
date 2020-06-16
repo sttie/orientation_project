@@ -189,6 +189,8 @@ def map_segmentation(polygons_old, map_width, map_height, display):
 
     cells = []
     current_cells = []
+    to_add_ceiling = []
+    to_add_floor = []
 
     # Правые границы будут определяться потом
     first_cell = Cell([Segment(Point(0, 0), None)], [Segment(Point(0, map_height), None)], Segment(Point(0, map_height), Point(0, 0)), None)
