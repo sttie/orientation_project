@@ -2,6 +2,25 @@ from figures import Point, Segment
 import intersections
 
 
+def is_on_seg(seg, point):
+    x, y = point.x, point.y
+    x1, y1, x2, y2 = seg.start.x, seg.start.y, seg.end.x, seg.end.y
+
+    return (x - x2)/(x1 - x2) == (y - y2)/(y1 - y2)
+
+
+def find_polygon(polygons, point):
+    p1 = Point(point.x, point.y - 1)
+    p2 = Point(point.x, point.y + 2)
+    seg2 = Segment(p1, p2)
+
+    for polygon in polygons:
+        segs = intersections.get_segments(polygon)
+        for seg in segs:
+            if intersections.get_intersection(seg, seg2):
+                return polygon
+
+
 # Сложно в комментариях объяснить все эти формулы
 # Функция берет две точки и строит прямоугольник с одной из сторон, равной radius,
 # с этими точками по центру двух противоположных сторон
