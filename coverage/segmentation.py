@@ -285,9 +285,14 @@ def map_segmentation(polygons_old, map_width, map_height, display):
             else:
                 carriage = Segment(c, event_pos)
 
-            current_cell = get_current_cell(current_cells, event_pos, carriage, polygons, display)
-            current_cell.floor_edges[-1].end = event.floor.end
-            current_cell.floor_edges.append(Segment(event.floor.end, None))
+            # Если точка находится как бы в "впадине"
+            if c is not None and event_pos in find_polygon(polygons, c):
+                to_add_floor.append(event)
+                
+            else:
+                current_cell = get_current_cell(current_cells, event_pos, carriage, polygons, display)
+                current_cell.floor_edges[-1].end = event.floor.end
+                current_cell.floor_edges.append(Segment(event.floor.end, None))
 
 
         elif event.event_type == CEILING:
@@ -298,9 +303,14 @@ def map_segmentation(polygons_old, map_width, map_height, display):
             else:
                 carriage = Segment(event_pos, f)
 
-            current_cell = get_current_cell(current_cells, event_pos, carriage, polygons, display)
-            current_cell.ceiling_edges[-1].end = event.ceiling.start
-            current_cell.ceiling_edges.append(Segment(event.ceiling.start, None))
+            # Если точка находится как бы во "впадине"
+            if f is not None and event_pos in find_polygon(polygons, f):
+                to_add_ceiling.append(event)
+                
+            else:
+                current_cell = get_current_cell(current_cells, event_pos, carriage, polygons, display)
+                current_cell.ceiling_edges[-1].end = event.ceiling.start
+                current_cell.ceiling_edges.append(Segment(event.ceiling.start, None))
 
 
         elif event.event_type == OUT:
