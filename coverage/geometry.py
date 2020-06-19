@@ -1,5 +1,4 @@
 from figures import Point, Segment
-from geometry import find_polygon
 import intersections
 
 
