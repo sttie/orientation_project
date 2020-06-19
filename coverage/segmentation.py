@@ -1,6 +1,7 @@
 from intersections import *
 from operator import attrgetter
 from figures import Segment, Point
+from geometry import find_polygon
 import pygame
 
 
