@@ -2,25 +2,6 @@ from figures import *
 import geometry
 
 
-# def area(p1, p2, p3):
-#     return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)
-
-# def sub_intersect(x1, x2, x3, x4):
-#     if x1 > x2:
-#         x1, x2 = x2, x1
-#     if x3 > x4:
-#         x3, x4 = x4, x3
-    
-#     return max(x1, x3) <= min(x2, x4)
-
-# Функция проверяет отрезки на пересечение. Отрезки "на стыке" тоже считаются пересекающимися
-# def has_intersection(seg1, seg2):
-#     flag  = sub_intersect(seg1.start.x, seg1.end.x, seg2.start.x, seg2.end.x)
-#     flag &= sub_intersect(seg1.start.y, seg1.end.y, seg2.start.y, seg2.end.y)
-#     flag &= area(seg1.start, seg1.end, seg2.start) * area(seg1.start, seg1.end, seg2.end) <= 0
-#     flag &= area(seg2.start, seg2.end, seg1.start) * area(seg2.start, seg2.end, seg1.end) <= 0
-
-#     return flag
 
 def has_intersection(seg1, seg2):
     x1, x2, y1, y2 = seg1.start.x, seg1.end.x, seg1.start.y, seg1.end.y    
